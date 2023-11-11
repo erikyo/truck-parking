@@ -17,10 +17,10 @@ export default class Car {
 
   frameMesh = new THREE.Mesh()
 
-  wheelLFMesh = new THREE.Group()
-  wheelRFMesh = new THREE.Group()
-  wheelLBMesh = new THREE.Group()
-  wheelRBMesh = new THREE.Group()
+  wheelLFMesh = new THREE.Mesh()
+  wheelRFMesh = new THREE.Mesh()
+  wheelLBMesh = new THREE.Mesh()
+  wheelRBMesh = new THREE.Mesh()
 
   private readonly tmpVec = new THREE.Vector3()
   private readonly tmpQuat = new THREE.Quaternion()
@@ -60,7 +60,7 @@ export default class Car {
   cameraTempPosition: THREE.Object3D
 
   private readonly lensflares = [new Lensflare(), new Lensflare(), new Lensflare()]
-  // debugMesh: THREE.Mesh
+  debugMesh: THREE.Mesh
 
   constructor (
     scene: THREE.Scene,
@@ -74,22 +74,22 @@ export default class Car {
     this.players = players
     this.listener = listener
 
+    this.debugMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.5),
+      new THREE.MeshNormalMaterial()
+    )
+    scene.add(this.debugMesh)
+
     this.cameraTempPosition = new THREE.Object3D()
     scene.add(this.cameraTempPosition)
 
     const audioLoader = new THREE.AudioLoader()
     const carSound = new THREE.PositionalAudio(this.listener)
-    audioLoader.load('sounds/engine.wav', (buffer) => {
+    audioLoader.load('./assets/sounds/engine.wav', (buffer) => {
       carSound.setBuffer(buffer)
       carSound.setVolume(0.5)
     })
     this.carSound = carSound
-
-    const pipesMaterial = new THREE.MeshStandardMaterial()
-    pipesMaterial.color = new THREE.Color('#ffffff')
-    pipesMaterial.refractionRatio = 0
-    pipesMaterial.roughness = 0.2
-    pipesMaterial.metalness = 1
 
     const flareTexture = new THREE.TextureLoader().load('./assets/img/lensflare0.png')
     this.lensflares.forEach((l) => {
@@ -108,39 +108,30 @@ export default class Car {
       './assets/models/truck_optim.glb',
       (gltf) => {
         console.log(gltf.scene)
-        this.frameMesh = gltf.scene.children[gltf.scene.children.length - 1] as THREE.Mesh
-        // this.frameMesh.material = pipesMaterial
+
+        this.enabled = true
+        this.frameMesh = gltf.scene.children[0].children[0] as THREE.Mesh
+        console.log('truck body', this.frameMesh)
         this.frameMesh.castShadow = true
         scene.add(this.frameMesh)
+
         this.carSound.loop = true
         this.frameMesh.add(this.carSound)
 
-        this.chaseCam.position.set(0, 4, 300)
+        this.chaseCam.position.set(0, 4, 400)
         this.chaseCamPivot.add(this.chaseCam)
         this.frameMesh.add(this.chaseCamPivot)
 
-        loader.load(
-          './assets/models/tyre.glb',
-          (gltf) => {
-            this.wheelLFMesh = gltf.scene
-            this.wheelLFMesh.children[0].castShadow = true
-            this.wheelRFMesh = this.wheelLFMesh.clone()
-            this.wheelLBMesh = this.wheelLFMesh.clone()
-            this.wheelRBMesh = this.wheelLFMesh.clone()
-            this.wheelLFMesh.scale.setScalar(0.87)
-            this.wheelRFMesh.scale.setScalar(0.87)
-            scene.add(this.wheelLFMesh)
-            scene.add(this.wheelRFMesh)
-            scene.add(this.wheelLBMesh)
-            scene.add(this.wheelRBMesh)
-          },
-          (xhr) => {
-            console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
-          },
-          (error) => {
-            console.log(error)
-          }
-        )
+        this.wheelLFMesh = gltf.scene.children[0].children[7] as THREE.Mesh
+        console.log('wheel LR', this.wheelLFMesh)
+        // this.wheelLFMesh.children[0].castShadow = true
+        this.wheelRFMesh = gltf.scene.children[0].children[6] as THREE.Mesh
+        this.wheelLBMesh = gltf.scene.children[0].children[4] as THREE.Mesh
+        this.wheelRBMesh = gltf.scene.children[0].children[5] as THREE.Mesh
+        scene.add(this.wheelLFMesh)
+        scene.add(this.wheelRFMesh)
+        scene.add(this.wheelLBMesh)
+        scene.add(this.wheelRBMesh)
       },
       (xhr) => {
         console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
@@ -149,10 +140,10 @@ export default class Car {
         console.log(error)
       }
     )
-    this.frameBody = new CANNON.Body({ mass: 0.1 })
+    this.frameBody = new CANNON.Body({ mass: 1 })
     this.frameBody.addShape(
       new CANNON.Sphere(0.1),
-      new CANNON.Vec3(0, 0.8, 0.4)
+      new CANNON.Vec3(0, 0, 0)
     )
     this.frameBody.addShape(
       new CANNON.Sphere(0.1),
@@ -162,13 +153,16 @@ export default class Car {
       new CANNON.Sphere(0.1),
       new CANNON.Vec3(0, -0.1, 1.3)
     )
-    this.frameBody.addShape(new CANNON.Sphere(0.1), new CANNON.Vec3(1, -0.1, 0))
+    this.frameBody.addShape(
+      new CANNON.Sphere(0.1),
+      new CANNON.Vec3(1, -0.1, 0)
+    )
     this.frameBody.addShape(
       new CANNON.Sphere(0.1),
       new CANNON.Vec3(-1, -0.1, 0)
     )
-    this.frameBody.position.set(0, 0, 0)
-    // this.physics.world.addBody(this.frameBody)
+    this.frameBody.position.set(0, 100, 0)
+    this.physics.world.addBody(this.frameBody)
 
     const wheelLFShape = new CANNON.Sphere(0.35)
     this.wheelLFBody = new CANNON.Body({
@@ -252,7 +246,7 @@ export default class Car {
     )
     this.physics.world.addConstraint(this.constraintRB)
 
-    // //rear wheel drive
+    // rear wheel drive
     this.constraintLB.enableMotor()
     this.constraintRB.enableMotor()
 
@@ -277,7 +271,7 @@ export default class Car {
 
   shoot () {
     if (this.enabled) {
-      console.log('bullet')
+      console.log('PEW PEW PEW')
     }
   }
 
@@ -368,15 +362,13 @@ export default class Car {
     )
     this.wheelRBBody.quaternion.copy(q)
 
-    setTimeout(() => {
-      this.physics.world.addBody(this.frameBody)
-      this.physics.world.addBody(this.wheelLFBody)
-      this.physics.world.addBody(this.wheelRFBody)
-      this.physics.world.addBody(this.wheelLBBody)
-      this.physics.world.addBody(this.wheelRBBody)
+    this.physics.world.addBody(this.frameBody)
+    this.physics.world.addBody(this.wheelLFBody)
+    this.physics.world.addBody(this.wheelRFBody)
+    this.physics.world.addBody(this.wheelLBBody)
+    this.physics.world.addBody(this.wheelRBBody)
 
-      this.enabled = true
-    }, 500)
+    this.enabled = true
   }
 
   update () {

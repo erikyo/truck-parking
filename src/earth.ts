@@ -18,7 +18,9 @@ export default class Earth {
       './assets/models/big_track.glb',
       (gltf) => {
         const track = gltf.scene
-        track.children.forEach((child) => {
+        console.log(track);
+        track.children[0].children.forEach((child) => {
+          console.log(child);
           if ((child as THREE.Mesh).isMesh) { // Adjust the scale based on your requirements
             const m = child as THREE.Mesh
             m.receiveShadow = true
@@ -27,7 +29,7 @@ export default class Earth {
 
             const shape = CannonUtils.CreateTrimesh(m.geometry)
             const earthBody = new CANNON.Body({
-              mass: 0,
+              mass: 0.1,
               material: physics.groundMaterial
             })
             earthBody.addShape(shape)

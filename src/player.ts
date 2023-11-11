@@ -65,18 +65,11 @@ export default class Player {
 
     const audioLoader = new THREE.AudioLoader()
     const carSound = new THREE.PositionalAudio(this.listener)
-    audioLoader.load('sounds/engine.wav', (buffer) => {
+    audioLoader.load('./assets/sounds/engine.wav', (buffer) => {
       carSound.setBuffer(buffer)
       carSound.setVolume(0.5)
     })
     this.carSound = carSound
-
-    const shootSound = new THREE.PositionalAudio(this.listener)
-    audioLoader.load('sounds/rocket.ogg', (buffer) => {
-      shootSound.setBuffer(buffer)
-      shootSound.setVolume(2)
-    })
-    this.shootSound = shootSound
 
     const flareTexture = new THREE.TextureLoader().load('./assets/img/lensflare0.png')
     this.lensflares.forEach((l) => {
@@ -373,30 +366,5 @@ export default class Player {
     this.physics.world.removeBody(this.frameBody)
 
     this.annotationDiv.remove()
-
-    // work in progress
-    // console.log('scene object count = ' + this.scene.children.length)
-    // this.wheelLFMesh.traverse((child: THREE.Object3D) => {
-    // if ((child as THREE.Group).isGroup) {
-    //     console.log('here a')
-    //     child.traverse((child: THREE.Object3D) => {
-    //         if ((child as THREE.Mesh).isMesh) {
-    //             console.log('here b')
-    //             ;(
-    //                 (child as THREE.Mesh)
-    //                     .material as THREE.MeshBasicMaterial
-    //             ).dispose()
-    //             ;(child as THREE.Mesh).geometry.dispose()
-    //         }
-    //     })
-    // }
-    // if ((child as THREE.Mesh).isMesh) {
-    //     //console.log('here c')
-    //     ;(
-    //         (child as THREE.Mesh).material as THREE.MeshBasicMaterial
-    //     ).dispose()
-    //     ;(child as THREE.Mesh).geometry.dispose()
-    // }
-    // })
   }
 }

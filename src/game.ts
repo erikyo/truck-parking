@@ -1,4 +1,4 @@
-import * as THREE from 'three'
+import type * as THREE from 'three'
 import UI from './ui'
 import Earth from './earth'
 import Physics from './physics'
@@ -66,13 +66,6 @@ export default class Game {
       this.physics.world
     )
 
-    const audioLoader = new THREE.AudioLoader()
-    const explosionSound = new THREE.PositionalAudio(this.listener)
-    audioLoader.load('sounds/explosion.ogg', (buffer) => {
-      explosionSound.setBuffer(buffer)
-      explosionSound.setRefDistance(20)
-    })
-    this.explosionSound = explosionSound
     console.log('game on')
   }
 
