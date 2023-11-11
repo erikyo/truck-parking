@@ -6,8 +6,56 @@ import Cosmos from './cosmos'
 import type Car from './car'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
+function traverseSceneItems (item): THREE.Mesh[] | null {
+  if (item.type === 'Mesh') {
+    return [item as THREE.Mesh]
+  }
+  const meshes: THREE.Mesh[] = []
+  item.children[0].traverse((child: THREE.Object3D | THREE.Mesh) => {
+    if ((child as THREE.Mesh).isMesh) {
+      const mesh = child as THREE.Mesh
+      meshes.push(mesh)
+    } else {
+      traverseSceneItems(child)
+    }
+  })
+  return meshes
+}
+
+function onModelLoad (gltf, physics) {
+  const scene = gltf.scene
+  const track = scene.children[0]
+  console.log(track)
+
+  track.children[0].traverse((child: THREE.Object3D | THREE.Mesh) => {
+    console.log(child)
+
+    const meshes = traverseSceneItems(child)
+
+    meshes?.forEach((m) => {
+      const shape = CannonUtils.CreateTrimesh(m.geometry)
+      const earthBody = new CANNON.Body({
+        mass: 0.1,
+        material: physics.groundMaterial
+      })
+      earthBody.addShape(shape)
+      earthBody.position.x = m.position.x
+      earthBody.position.y = m.position.y
+      earthBody.position.z = m.position.z
+      earthBody.quaternion.x = m.quaternion.x
+      earthBody.quaternion.y = m.quaternion.y
+      earthBody.quaternion.z = m.quaternion.z
+      earthBody.quaternion.w = m.quaternion.w
+
+      physics.world.addBody(earthBody)
+    })
+
+    scene.add(child)
+  })
+}
+
 export default class Earth {
-  private mesh = new THREE.Mesh()
+  private readonly mesh = new THREE.Mesh()
   private readonly lightPivot: THREE.Object3D
   ambientLight: THREE.AmbientLight
   light: THREE.DirectionalLight
@@ -17,37 +65,9 @@ export default class Earth {
     loader.load(
       './assets/models/big_track.glb',
       (gltf) => {
-        const track = gltf.scene
-        console.log(track);
-        track.children[0].children.forEach((child) => {
-          console.log(child);
-          if ((child as THREE.Mesh).isMesh) { // Adjust the scale based on your requirements
-            const m = child as THREE.Mesh
-            m.receiveShadow = true
-            m.castShadow = true
-            this.mesh = m
-
-            const shape = CannonUtils.CreateTrimesh(m.geometry)
-            const earthBody = new CANNON.Body({
-              mass: 0.1,
-              material: physics.groundMaterial
-            })
-            earthBody.addShape(shape)
-            earthBody.position.x = m.position.x
-            earthBody.position.y = m.position.y
-            earthBody.position.z = m.position.z
-            earthBody.quaternion.x = m.quaternion.x
-            earthBody.quaternion.y = m.quaternion.y
-            earthBody.quaternion.z = m.quaternion.z
-            earthBody.quaternion.w = m.quaternion.w
-
-            physics.world.addBody(earthBody)
-
-            const startPosition = this.getSpawnPosition()
-            car.spawn(startPosition)
-          }
-          scene.add(child)
-        })
+        onModelLoad(gltf, physics)
+        const startPosition = this.getSpawnPosition()
+        car.spawn(startPosition)
       },
       (xhr) => {
         console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
