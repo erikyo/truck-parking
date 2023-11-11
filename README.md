@@ -1,7 +1,3 @@
-# First Car Shooter (FCS)
-
-
-
 ## Credits
 
 - [Sean-Bradley](https://github.com/Sean-Bradley) a fork of [First-Car-Shooter](https://github.com/Sean-Bradley/First-Car-Shooter)
