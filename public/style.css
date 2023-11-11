@@ -1,0 +1,269 @@
+html,
+body {
+    margin: 0;
+    height: 100%;
+    font-family: monospace;
+    color: #dddddd;
+    background-color: black;
+}
+
+h1 {
+    font-size: 56px;
+}
+
+h2 {
+    font-size: 32px;
+}
+
+#pingStats {
+    position: absolute;
+    top: 60px;
+    left: 4px;
+    width: 400px;
+    height: 400px;
+    pointer-events: none;
+}
+
+#gameClock {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    margin-left: -42px;
+    width: 84px;
+    height: 78px;
+    font-size: 72px;
+    text-align: center;
+    pointer-events: none;
+}
+
+#newGameAlert {
+    position: absolute;
+    height: 400px;
+    width: 500px;
+    margin-top: -200px;
+    margin-left: -250px;
+    top: 50%;
+    left: 50%;
+    /* border: 1px solid red; */
+    text-align: center;
+    pointer-events: none;
+    display: none;
+}
+
+#gameClosedAlert {
+    position: absolute;
+    height: 400px;
+    width: 500px;
+    margin-top: -200px;
+    margin-left: -250px;
+    top: 50%;
+    left: 50%;
+    /* border: 1px solid red; */
+    text-align: center;
+    pointer-events: none;
+    display: none;
+}
+
+#winnerLabel {
+    display: none;
+}
+
+#winnerScreenName {
+    font-size: 85px;
+}
+
+#menuPanel {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: none;
+}
+
+#menuPanel a {
+    pointer-events: auto;
+    color: #dddddd;
+}
+
+#instructions {
+    background-color: rgba(0, 0, 0, 0.5);
+    height: 640px;
+    width: 760px;
+    margin-top: -320px;
+    margin-left: -380px;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    font-size: 17px;
+    border: 1px solid gray;
+    text-align: center;
+    pointer-events: none;
+}
+
+#startButton {
+    height: 50px;
+    width: 230px;
+    font-size: 24px;
+    margin: 10px;
+    pointer-events: auto;
+}
+
+#screenNameInput {
+    font-size: 24px;
+    width: 140px;
+    pointer-events: auto;
+}
+
+#shadowsEnabledCheckbox,
+#shadowMapSize,
+#ambientLightIntensity {
+    pointer-events: auto;
+}
+
+#recentWinnersTable {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border: 1px solid gray;
+    right: 20px;
+    top: 20px;
+    font-size: 17px;
+    display: none;
+}
+
+#recentWinnersTable th {
+    text-align: left;
+}
+
+.annotationLabel {
+    color: #00ff00;
+    font-family: monospace;
+    pointer-events: none;
+    font-size: 14px;
+}
+
+#XYControllerLook {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    right: 0px;
+    bottom: 0px;
+    background-color: rgba(255, 255, 255, 0.1);
+    display: none;
+}
+
+#XYControllerMove {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    left: 0px;
+    bottom: 0px;
+    background-color: rgba(255, 255, 255, 0.1);
+    display: none;
+}
+
+#desktopCommands,
+#mobileCommands {
+    margin: 4px;
+    display: none;
+}
+
+@media only screen and (max-width: 812px) {
+    #pingStats {
+        display: none;
+    }
+
+    #recentWinnersTable {
+        position: absolute;
+        width: 120px;
+        height: 100px;
+        border: 1px solid black;
+        right: 4px;
+        top: 4px;
+        color: white;
+        font-size: 9px;
+    }
+
+    #instructions {
+        height: 300px;
+        width: 600px;
+        margin-top: -150px;
+        margin-left: -300px;
+        position: relative;
+        top: 50%;
+        left: 50%;
+        font-size: 13px;
+        border: 1px solid black;
+        text-align: center;
+        pointer-events: none;
+    }
+
+    h1 {
+        font-size: 17px;
+    }
+
+    h2 {
+        font-size: 14px;
+    }
+
+    #startButton {
+        height: 25px;
+        width: 140px;
+        font-size: 14px;
+        margin: 4px;
+        pointer-events: auto;
+    }
+
+    #screenNameInput {
+        font-size: 14px;
+        width: 100px;
+        pointer-events: auto;
+    }
+}
+
+@media only screen and (max-width: 375px) {
+    #pingStats {
+        display: none;
+    }
+
+    #recentWinnersTable {
+        position: absolute;
+        width: 120px;
+        height: 100px;
+        border: 1px solid black;
+        right: 4px;
+        top: 4px;
+        color: white;
+        font-size: 9px;
+    }
+
+    #instructions {
+        height: 560px;
+        width: 300px;
+        margin-top: -270px;
+        margin-left: -150px;
+        position: relative;
+        top: 50%;
+        left: 50%;
+        font-size: 14px;
+        border: 1px solid black;
+        text-align: center;
+        pointer-events: none;
+    }
+
+    h1 {
+        font-size: 21px;
+    }
+
+    h2 {
+        font-size: 17px;
+    }
+
+    #screenNameInput {
+        font-size: 14px;
+        width: 100px;
+        pointer-events: auto;
+    }
+}

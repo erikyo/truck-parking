@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+        />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <title>Three.js Trucks Parking</title>
+    </head>
+
+    <body>
+        <div id="gameClock"></div>
+        <div id="menuPanel">
+            <div id="instructions">
+                <h1>Trucks Parking</h1>
+                <h2>parking a big truck isn't a game</h2>
+                <p>
+                    asd
+                </p>
+
+                <div id="desktopCommands">
+                    Drive: WASD<br />
+                    Brakes: SPACE<br />
+                    Look: MOUSE<br />
+                    Shoot: Left Click<br />
+                    Respawn : R<br />
+                </div>
+                <div id="mobileCommands">
+                    Left : Drive, Tap to shoot<br />
+                    Right : Look, Aim, Tap to shoot<br />
+                </div>
+                <div>
+                    <label for="email">ScreenName:</label>
+                    <input
+                        type="text"
+                        id="screenNameInput"
+                        maxlength="12"
+                        onClick="this.select();"
+                    />
+                </div>
+                <button id="startButton">Click to Start</button>
+                <br />
+                <br />
+                <div>
+                    <label for="email">Enable Shadows :</label>
+                    <input type="checkbox" id="shadowsEnabledCheckbox" />
+                    <label for="email">Shadow Map Size :</label>
+                    <select id="shadowMapSize">
+                        <option value="512">512</option>
+                        <option value="1024">1024</option>
+                        <option value="2048">2048</option>
+                        <option value="4096">4096</option>
+                        <option value="8192">8192</option>
+                        <option value="16384">16384</option>
+                    </select>
+                    <label for="email">Ambient Light :</label>
+                    <select id="ambientLightIntensity">
+                        <option value=".1">.1</option>
+                        <option value=".2">.2</option>
+                        <option value=".3">.3</option>
+                        <option value=".4">.4</option>
+                        <option value=".5" selected>.5</option>
+                        <option value=".6">.6</option>
+                        <option value=".7">.7</option>
+                        <option value=".8">.8</option>
+                        <option value=".9">.9</option>
+                        <option value="1">1</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div id="newGameAlert">
+            <h1>New Game</h1>
+        </div>
+        <div id="gameClosedAlert">
+            <h1>Game Closed</h1>
+            <h2 id="winnerLabel">Winner</h2>
+            <span id="winnerScreenName"></span>
+        </div>
+        <div id="pingStats"></div>
+        <table id="recentWinnersTable">
+            <tr>
+                <th>Screen Name</th>
+                <th>Score</th>
+            </tr>
+        </table>
+        <canvas id="XYControllerLook"></canvas>
+        <canvas id="XYControllerMove"></canvas>
+        <script type="module" src="truck-game.js"></script>
+        <link rel="stylesheet" type="text/css" href="style.css"></link>
+    </body>
+</html>
