@@ -24,7 +24,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 )
-camera.position.set(0, 0, 2000)
+camera.position.set(0, 0, 50)
 
 const listener = new THREE.AudioListener()
 camera.add(listener)

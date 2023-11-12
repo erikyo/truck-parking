@@ -4,17 +4,17 @@ import { type Vec2, XYController } from './XYController'
 
 export default class UI {
   menuActive: boolean
-  private readonly recentWinnersTable: HTMLTableElement
-  private readonly startButton: HTMLButtonElement
+  recentWinnersTable: HTMLTableElement
+  startButton: HTMLButtonElement
   menuPanel: HTMLDivElement
   newGameAlert: HTMLDivElement
   gameClosedAlert: HTMLDivElement
-  private readonly keyCheckInterval: NodeJS.Timer
-  private readonly shadowsEnabledCheckbox: HTMLInputElement
-  private readonly shadowMapSize: HTMLSelectElement
-  private readonly ambientLightIntensity: HTMLSelectElement
-  private readonly renderer: THREE.WebGLRenderer
-  private readonly game: Game
+  keyCheckInterval: NodeJS.Timer
+  shadowsEnabledCheckbox: HTMLInputElement
+  shadowMapSize: HTMLSelectElement
+  ambientLightIntensity: HTMLSelectElement
+  renderer: THREE.WebGLRenderer
+  game: Game
   private camAngle = 0
 
   private xycontrollerLook?: XYController
@@ -144,7 +144,7 @@ export default class UI {
     })
 
     this.keyCheckInterval = setInterval(() => {
-      // key presses are checked here once every 50ms.
+     // key presses are checked here once every 50ms.
       const car = this.game.car
       car.thrusting = false
       car.steering = false
@@ -228,9 +228,6 @@ export default class UI {
       this.menuActive = false
 
       this.game.car.carSound.play()
-      Object.keys(this.game.players).forEach((p) => {
-        this.game.players[p].carSound.play()
-      })
 
       new TWEEN.Tween(this.game.car.chaseCam.position)
         .to({ z: 4 })
@@ -257,9 +254,6 @@ export default class UI {
       this.menuActive = true
 
       this.game.car.carSound.stop()
-      Object.keys(this.game.players).forEach((p) => {
-        this.game.players[p].carSound.stop()
-      })
 
       new TWEEN.Tween(this.game.car.chaseCam.position)
         .to({ z: 250 })

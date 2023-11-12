@@ -1,58 +1,11 @@
 import * as THREE from 'three'
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
 import * as CANNON from 'cannon-es'
 import CannonUtils from './utils/cannonUtils'
 import type Physics from './physics'
 import Cosmos from './cosmos'
 import type Car from './car'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
-
-function traverseSceneItems (item): THREE.Mesh[] | null {
-  if (item.type === 'Mesh') {
-    return [item as THREE.Mesh]
-  }
-  const meshes: THREE.Mesh[] = []
-  item.children[0].traverse((child: THREE.Object3D | THREE.Mesh) => {
-    if ((child as THREE.Mesh).isMesh) {
-      const mesh = child as THREE.Mesh
-      meshes.push(mesh)
-    } else {
-      traverseSceneItems(child)
-    }
-  })
-  return meshes
-}
-
-function onModelLoad (gltf, physics) {
-  const scene = gltf.scene
-  const track = scene.children[0]
-  console.log(track)
-
-  track.children[0].traverse((child: THREE.Object3D | THREE.Mesh) => {
-    console.log(child)
-
-    const meshes = traverseSceneItems(child)
-
-    meshes?.forEach((m) => {
-      const shape = CannonUtils.CreateTrimesh(m.geometry)
-      const earthBody = new CANNON.Body({
-        mass: 0.1,
-        material: physics.groundMaterial
-      })
-      earthBody.addShape(shape)
-      earthBody.position.x = m.position.x
-      earthBody.position.y = m.position.y
-      earthBody.position.z = m.position.z
-      earthBody.quaternion.x = m.quaternion.x
-      earthBody.quaternion.y = m.quaternion.y
-      earthBody.quaternion.z = m.quaternion.z
-      earthBody.quaternion.w = m.quaternion.w
-
-      physics.world.addBody(earthBody)
-    })
-
-    scene.add(child)
-  })
-}
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader'
 
 export default class Earth {
   private readonly mesh = new THREE.Mesh()
@@ -61,21 +14,80 @@ export default class Earth {
   light: THREE.DirectionalLight
 
   constructor (scene: THREE.Scene, physics: Physics, car: Car) {
-    const loader = new GLTFLoader()
-    loader.load(
-      './assets/models/big_track.glb',
-      (gltf) => {
-        onModelLoad(gltf, physics)
-        const startPosition = this.getSpawnPosition()
-        car.spawn(startPosition)
-      },
-      (xhr) => {
-        console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
-      },
-      (error) => {
-        console.log(error)
-      }
+    const earthTexture = new THREE.TextureLoader().load(
+      './assets/img/worldColour.5400x2700.jpg'
     )
+    const material = new THREE.MeshPhongMaterial() // { wireframe: true })
+    material.map = earthTexture
+
+    const normalMaterial = new THREE.TextureLoader().load(
+      './assets/img/earth_normalmap_4096x2048.jpg'
+    )
+    material.normalMap = normalMaterial
+    const mtlLoader = new MTLLoader()
+
+    let track
+    mtlLoader.load('./assets/models/big_track.mtl', function (materials) {
+      materials.preload()
+      const objLoader = new OBJLoader()
+      objLoader.setMaterials(materials)
+      objLoader.load(
+        './assets/models/big_track.obj',
+        (obj) => {
+          track = obj
+          scene.add(track)
+          obj.traverse((child) => {
+            if ((child as THREE.Mesh).isMesh) {
+              const m = child as THREE.Mesh
+              m.receiveShadow = true
+              m.castShadow = true
+              m.material = material
+              this.mesh = m
+
+              const shape = CannonUtils.CreateTrimesh(m.geometry)
+              const earthBody = new CANNON.Body({
+                mass: 0,
+                material: physics.groundMaterial
+              })
+              earthBody.addShape(shape)
+              earthBody.position.x = m.position.x
+              earthBody.position.y = m.position.y
+              earthBody.position.z = m.position.z
+              earthBody.quaternion.x = m.quaternion.x
+              earthBody.quaternion.y = m.quaternion.y
+              earthBody.quaternion.z = m.quaternion.z
+              earthBody.quaternion.w = m.quaternion.w
+              physics.world.addBody(earthBody)
+
+              const startPosition = this.getSpawnPosition()
+              car.spawn(startPosition)
+            }
+          })
+
+          scene.add(obj)
+        },
+        (xhr) => {
+          console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+        },
+        (error) => {
+          console.log(error)
+        }
+      )
+    })
+
+    // this.mesh = new THREE.Mesh(
+    //     new THREE.SphereGeometry(100, 16, 16),
+    //     earthMaterial
+    // )
+    // scene.add(this.mesh)
+    // this.earthBody = new CANNON.Body({
+    //     mass: 0,
+    //     material: physics.groundMaterial,
+    // })
+    // this.earthBody.addShape(new CANNON.Sphere(100))
+    // physics.world.addBody(this.earthBody)
+    // const startPosition = this.getSpawnPosition()
+    // car.spawn(startPosition)
 
     this.ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
     scene.add(this.ambientLight)

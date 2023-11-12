@@ -4,7 +4,6 @@ import Earth from './earth'
 import Physics from './physics'
 import CannonDebugRenderer from './utils/cannonDebugRenderer'
 import Car from './car'
-import type Player from './player'
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min'
 import type { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer'
 
@@ -23,7 +22,6 @@ export default class Game {
   private myId = ''
   private gamePhase: number = 0
   private readonly timestamp = 0
-  players: Record<string, Player> = {}
   // springs: { [id: string]: Spring } = {}
   private readonly explosionSound: THREE.PositionalAudio
 
@@ -52,10 +50,9 @@ export default class Game {
     this.ui = new UI(this, renderer)
     this.physics = new Physics()
     this.car = new Car(
-      scene,
+      this.scene,
       camera,
       this.physics,
-      this.players,
       this.listener
     )
     this.earth = new Earth(this.scene, this.physics, this.car)
@@ -65,7 +62,6 @@ export default class Game {
       this.scene,
       this.physics.world
     )
-
     console.log('game on')
   }
 

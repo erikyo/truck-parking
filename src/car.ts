@@ -1,8 +1,7 @@
-import * as THREE from 'three'
+import { Mesh, Vector3, Object3D, Color, AudioListener, PositionalAudio, AudioLoader, TextureLoader, PerspectiveCamera, Scene, Quaternion } from 'three'
 import * as CANNON from 'cannon-es'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import type Physics from './physics'
-import type Player from './player'
 import type Earth from './earth'
 import {
   Lensflare,
@@ -12,22 +11,22 @@ import {
 export default class Car {
   earth: null | Earth = null
   // private scene: THREE.Scene
-  private readonly camera: THREE.PerspectiveCamera
+  private readonly camera: PerspectiveCamera
   private readonly physics: Physics
 
-  frameMesh = new THREE.Mesh()
+  frameMesh = new Mesh()
 
-  wheelLFMesh = new THREE.Mesh()
-  wheelRFMesh = new THREE.Mesh()
-  wheelLBMesh = new THREE.Mesh()
-  wheelRBMesh = new THREE.Mesh()
+  wheelLFMesh = new Mesh()
+  wheelRFMesh = new Mesh()
+  wheelLBMesh = new Mesh()
+  wheelRBMesh = new Mesh()
 
-  private readonly tmpVec = new THREE.Vector3()
-  private readonly tmpQuat = new THREE.Quaternion()
-  private readonly camPos = new THREE.Vector3()
-  private readonly camQuat = new THREE.Quaternion()
-  chaseCamPivot = new THREE.Object3D()
-  chaseCam = new THREE.Object3D()
+  private readonly tmpVec = new Vector3()
+  private readonly tmpQuat = new Quaternion()
+  private readonly camPos = new Vector3()
+  private readonly camQuat = new Quaternion()
+  chaseCamPivot = new Object3D()
+  chaseCam = new Object3D()
 
   frameBody: CANNON.Body
 
@@ -49,56 +48,59 @@ export default class Car {
 
   private readonly score: number = 0
 
-  private readonly players: Record<string, Player>
-
   private upsideDownCounter = -1
 
-  private readonly listener: THREE.AudioListener
-  carSound: THREE.PositionalAudio
-  private readonly shootSound: THREE.PositionalAudio
+  private readonly listener: AudioListener
+  carSound: PositionalAudio
+  private rattleSound: PositionalAudio[] = []
 
-  cameraTempPosition: THREE.Object3D
+  cameraTempPosition: Object3D
 
   private readonly lensflares = [new Lensflare(), new Lensflare(), new Lensflare()]
-  debugMesh: THREE.Mesh
+  debugMesh: Mesh
 
   constructor (
-    scene: THREE.Scene,
-    camera: THREE.PerspectiveCamera,
+    scene: Scene,
+    camera: PerspectiveCamera,
     physics: Physics,
-    players: Record<string, Player>,
-    listener: THREE.AudioListener
+    listener: AudioListener
   ) {
     this.camera = camera
     this.physics = physics
-    this.players = players
     this.listener = listener
 
-    this.debugMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.5),
-      new THREE.MeshNormalMaterial()
-    )
-    scene.add(this.debugMesh)
-
-    this.cameraTempPosition = new THREE.Object3D()
+    this.cameraTempPosition = new Object3D()
     scene.add(this.cameraTempPosition)
 
-    const audioLoader = new THREE.AudioLoader()
-    const carSound = new THREE.PositionalAudio(this.listener)
+    const audioLoader = new AudioLoader()
+    const carSound = new PositionalAudio(this.listener)
     audioLoader.load('./assets/sounds/engine.wav', (buffer) => {
       carSound.setBuffer(buffer)
       carSound.setVolume(0.5)
     })
     this.carSound = carSound
 
-    const flareTexture = new THREE.TextureLoader().load('./assets/img/lensflare0.png')
+    this.rattleSound.push(new PositionalAudio(listener as AudioListener))
+    audioLoader?.load('./assets/sounds/crash.wav', (buffer) => {
+      this.rattleSound[0].setBuffer(buffer)
+      this.rattleSound[0].setLoop(false)
+    })
+    this.frameMesh.add(this.rattleSound[0] as PositionalAudio)
+
+    this.rattleSound.push(new PositionalAudio(listener as AudioListener))
+    audioLoader?.load('./assets/sounds/crash2.wav', (buffer) => {
+      this.rattleSound[1].setBuffer(buffer)
+      this.rattleSound[1].setLoop(false)
+    })
+
+    const flareTexture = new TextureLoader().load('./assets/img/lensflare0.png')
     this.lensflares.forEach((l) => {
       l.addElement(
         new LensflareElement(
           flareTexture,
           200,
           0,
-          new THREE.Color(0x00ff00)
+          new Color(0x00ff00)
         )
       )
     })
@@ -110,7 +112,7 @@ export default class Car {
         console.log(gltf.scene)
 
         this.enabled = true
-        this.frameMesh = gltf.scene.children[0].children[0] as THREE.Mesh
+        this.frameMesh = gltf.scene.children[0].children[0] as Mesh
         console.log('truck body', this.frameMesh)
         this.frameMesh.castShadow = true
         scene.add(this.frameMesh)
@@ -118,16 +120,16 @@ export default class Car {
         this.carSound.loop = true
         this.frameMesh.add(this.carSound)
 
-        this.chaseCam.position.set(0, 4, 400)
+        this.chaseCam.position.set(0, 2, 250)
         this.chaseCamPivot.add(this.chaseCam)
         this.frameMesh.add(this.chaseCamPivot)
 
-        this.wheelLFMesh = gltf.scene.children[0].children[7] as THREE.Mesh
+        this.wheelLFMesh = gltf.scene.children[0].children[7] as Mesh
         console.log('wheel LR', this.wheelLFMesh)
         // this.wheelLFMesh.children[0].castShadow = true
-        this.wheelRFMesh = gltf.scene.children[0].children[6] as THREE.Mesh
-        this.wheelLBMesh = gltf.scene.children[0].children[4] as THREE.Mesh
-        this.wheelRBMesh = gltf.scene.children[0].children[5] as THREE.Mesh
+        this.wheelRFMesh = gltf.scene.children[0].children[6] as Mesh
+        this.wheelLBMesh = gltf.scene.children[0].children[4] as Mesh
+        this.wheelRBMesh = gltf.scene.children[0].children[5] as Mesh
         scene.add(this.wheelLFMesh)
         scene.add(this.wheelRFMesh)
         scene.add(this.wheelLBMesh)
@@ -140,29 +142,34 @@ export default class Car {
         console.log(error)
       }
     )
-    this.frameBody = new CANNON.Body({ mass: 1 })
+    this.frameBody = new CANNON.Body({ mass: 0.1 })
     this.frameBody.addShape(
       new CANNON.Sphere(0.1),
-      new CANNON.Vec3(0, 0, 0)
+      new CANNON.Vec3(-1.5, 1, -5.5)
     )
     this.frameBody.addShape(
       new CANNON.Sphere(0.1),
-      new CANNON.Vec3(0, -0.1, -1.3)
+      new CANNON.Vec3(1.5, 1, -5.5)
     )
     this.frameBody.addShape(
       new CANNON.Sphere(0.1),
-      new CANNON.Vec3(0, -0.1, 1.3)
+      new CANNON.Vec3(-1.5, 1, 7.5)
     )
+    this.frameBody.addShape(new CANNON.Sphere(0.1), new CANNON.Vec3(1, -0.1, 0))
     this.frameBody.addShape(
       new CANNON.Sphere(0.1),
-      new CANNON.Vec3(1, -0.1, 0)
+      new CANNON.Vec3(1.5, 1, 7.5)
     )
-    this.frameBody.addShape(
-      new CANNON.Sphere(0.1),
-      new CANNON.Vec3(-1, -0.1, 0)
-    )
-    this.frameBody.position.set(0, 100, 0)
-    this.physics.world.addBody(this.frameBody)
+    this.frameBody.position.set(0, 3.5, 0)
+
+    this.frameBody.addEventListener('collide', (e: any) => {
+      const r = Math.round(Math.random()) // 1 or 0
+      if (this.rattleSound[r] !== undefined) {
+        this.rattleSound[r].setVolume(Math.abs(e.contact.getImpactVelocityAlongNormal()) / 25)
+        if (this.rattleSound[r].isPlaying) this.rattleSound[r].stop()
+        this.rattleSound[r].play()
+      }
+    })
 
     const wheelLFShape = new CANNON.Sphere(0.35)
     this.wheelLFBody = new CANNON.Body({
@@ -171,7 +178,6 @@ export default class Car {
     })
     this.wheelLFBody.addShape(wheelLFShape)
     this.wheelLFBody.position.set(-1, 0, -1)
-    // this.physics.world.addBody(this.wheelLFBody)
 
     const wheelRFShape = new CANNON.Sphere(0.35)
     this.wheelRFBody = new CANNON.Body({
@@ -180,7 +186,6 @@ export default class Car {
     })
     this.wheelRFBody.addShape(wheelRFShape)
     this.wheelRFBody.position.set(1, 0, -1)
-    // this.physics.world.addBody(this.wheelRFBody)
 
     const wheelLBShape = new CANNON.Sphere(0.4)
     this.wheelLBBody = new CANNON.Body({
@@ -189,7 +194,6 @@ export default class Car {
     })
     this.wheelLBBody.addShape(wheelLBShape)
     this.wheelLBBody.position.set(-1, 0, 1)
-    // this.physics.world.addBody(this.wheelLBBody)
 
     const wheelRBShape = new CANNON.Sphere(0.4)
     this.wheelRBBody = new CANNON.Body({
@@ -198,7 +202,6 @@ export default class Car {
     })
     this.wheelRBBody.addShape(wheelRBShape)
     this.wheelRBBody.position.set(1, 0, 1)
-    // this.physics.world.addBody(this.wheelRBBody)
 
     const leftFrontAxis = new CANNON.Vec3(1, 0, 0)
     const rightFrontAxis = new CANNON.Vec3(1, 0, 0)
@@ -246,6 +249,12 @@ export default class Car {
     )
     this.physics.world.addConstraint(this.constraintRB)
 
+    this.physics.world.addBody(this.frameBody)
+    this.physics.world.addBody(this.wheelLFBody)
+    this.physics.world.addBody(this.wheelRFBody)
+    this.physics.world.addBody(this.wheelLBBody)
+    this.physics.world.addBody(this.wheelRBBody)
+
     // rear wheel drive
     this.constraintLB.enableMotor()
     this.constraintRB.enableMotor()
@@ -276,7 +285,7 @@ export default class Car {
   }
 
   isUpsideDown () {
-    const bodyUp = new THREE.Vector3()
+    const bodyUp = new Vector3()
     bodyUp.copy(this.frameMesh.up).applyQuaternion(this.frameMesh.quaternion)
     const down = this.frameMesh.position.clone().negate().normalize()
     // console.log(down.dot(bodyUp))
@@ -287,7 +296,7 @@ export default class Car {
     }
   }
 
-  spawn (startPosition: THREE.Vector3) {
+  spawn (startPosition: Vector3) {
     console.log('respawning')
     // console.log(startPosition)
 
@@ -302,9 +311,9 @@ export default class Car {
     this.physics.world.removeBody(this.wheelLBBody)
     this.physics.world.removeBody(this.wheelRBBody)
 
-    const o = new THREE.Object3D()
+    const o = new Object3D()
     o.position.copy(startPosition)
-    o.lookAt(new THREE.Vector3())
+    o.lookAt(new Vector3())
     o.rotateX(-Math.PI / 2)
 
     const q = new CANNON.Quaternion().set(
@@ -367,8 +376,6 @@ export default class Car {
     this.physics.world.addBody(this.wheelRFBody)
     this.physics.world.addBody(this.wheelLBBody)
     this.physics.world.addBody(this.wheelRBBody)
-
-    this.enabled = true
   }
 
   update () {
